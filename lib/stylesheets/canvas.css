@@ -1,0 +1,32 @@
+/*Light-plum: 59323C
+Dark-plum: 260126
+Cream: F2EEB3
+Tan: BFAF80
+Pink: 8C6954*/
+
+body {
+  background-color: #8C6954;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.game {
+}
+
+.header {
+  color: #260126;
+  text-align: center;
+}
+
+.game-div {
+  margin: auto;
+  margin-top: 20px;
+  max-width: 600px;
+  max-height: 500px;
+  border: 1px solid #260126;
+}
+
+.game-canvas {
+  background-color: #59323C;
+  /*width: 600px;
+  height: 400px;*/
+}
