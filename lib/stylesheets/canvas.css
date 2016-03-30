@@ -31,7 +31,14 @@ body {
   height: 400px;*/
 }
 
-button {
+.start-game {
+  font-family: 'Calligraffitti', cursive;
+  color: #260126;
+  font-size: 5em;
+  text-align: center;
+}
+
+/*button {
   font-family: 'Quicksand', sans-serif;
   font-size: 1.5em;
 }
@@ -39,4 +46,4 @@ button {
 .start-button {
   text-align: center;
   margin-top: 30px;
-}
+}*/
