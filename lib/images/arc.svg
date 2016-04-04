@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <path d="M20,0
+           A20,20 0 0,1 40,20"
+      style="stroke: blue; stroke-width:1; fill:none;"/>
+
+  <!-- <path d="M40,20
+           A20,20 0 0,1 20,40"
+      style="stroke: green; stroke-width:1; fill:none;"/>
+
+  <path d="M20,40
+           A20,20 0 0,1 0,20"
+      style="stroke: red; stroke-width:1; fill:none;"/>
+
+  <path d="M0,20
+           A20,20 0 0,1 20,0"
+           style="stroke: yellow; stroke-width:1; fill:none;"/> -->
+</svg>
