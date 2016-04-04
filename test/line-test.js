@@ -1,8 +1,8 @@
 let assert = require('chai').assert;
-const Spoke = require('../lib/scripts/spoke');
+const Line = require('../lib/scripts/line');
 
 it('Spoke is a function', function() {
-  assert.typeOf(Spoke, 'function');
+  assert.typeOf(Line, 'function');
 });
 
 describe('startingOrientation function chooses random starting direction', function() {
@@ -11,7 +11,7 @@ describe('startingOrientation function chooses random starting direction', funct
       return this[Math.floor(Math.random()*this.length)];
     };
 
-    let spoke = new Spoke(1, "bottom");
-    assert.notEqual(spoke.currentOrientation, "bottom");
+    let line = new Line(1, "horizontal");
+    assert.notEqual(line.currentOrientation, "horizontal");
   });
 });
