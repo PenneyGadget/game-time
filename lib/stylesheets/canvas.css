@@ -1,15 +1,6 @@
-/*Light-plum: 59323C
-Dark-plum: 260126
-Cream: F2EEB3
-Tan: BFAF80
-Pink: 8C6954*/
-
 body {
   background-color: #8C6954;
   font-family: 'Quicksand', sans-serif;
-}
-
-.game {
 }
 
 .header {
@@ -19,16 +10,10 @@ body {
 
 .game-div {
   margin: auto;
-  margin-top: 20px;
+  margin-top: 80px;
   max-width: 600px;
   max-height: 400px;
   border: 1px solid #260126;
-}
-
-.game-canvas {
-  background-color: #59323C;
-  /*width: 600px;
-  height: 400px;*/
 }
 
 .start-game {
@@ -37,13 +22,3 @@ body {
   font-size: 5em;
   text-align: center;
 }
-
-/*button {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 1.5em;
-}
-
-.start-button {
-  text-align: center;
-  margin-top: 30px;
-}*/
