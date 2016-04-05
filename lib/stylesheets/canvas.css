@@ -1,6 +1,7 @@
 body {
   background-color: #8C6954;
   font-family: 'Quicksand', sans-serif;
+  margin-top: 60px;
 }
 
 .header {
@@ -10,7 +11,7 @@ body {
 
 .game-div {
   margin: auto;
-  margin-top: 20px;
+  margin-top: 80px;
   width: 600px;
   height: 400px;
 }
