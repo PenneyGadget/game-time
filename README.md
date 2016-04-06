@@ -6,7 +6,7 @@ This is a clone of the popular mobile game of the same name, which is itself a r
 
 [Penney Garrett](https://github.com/PenneyGadget), [Beth Sebian](https://github.com/bethsebian)
 
-[Click here to play!](http://google.com)
+[Click here to play!](http://penneygadget.github.io/game-time/)
 
 ![infinite-loop](http://g.recordit.co/D8vOI0HKrw.gif)
 
