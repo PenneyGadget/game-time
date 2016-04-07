@@ -164,7 +164,7 @@
 	      rotateTile(location, self);
 	    }
 
-	    if (youWon(objectIndex)) {
+	    if (youWon(self.objectIndex)) {
 	      (function () {
 	        var gameTime = getGameLength(self);
 	        $('canvas').off('click');
