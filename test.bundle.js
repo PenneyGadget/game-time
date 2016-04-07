@@ -81,7 +81,7 @@
 	  this.width = canvas.width;
 	  this.height = canvas.height;
 	  this.context.lineWidth = 4;
-	  this.objectIndex = objectIndex;
+	  this.objectIndex = {};
 	  var renderer = new Renderer(this);
 	  this.renderer = renderer;
 	  var grid = new Grid();
@@ -90,31 +90,33 @@
 	  this.solutions = solutions;
 	  var effects = new Effects();
 	  this.effects = effects;
+	  this.counter = 0;
 	};
-
-	var objectIndex = {};
 
 	Game.prototype.startGame = function () {
 	  this.effects.introSequence(this);
 	};
 
 	Game.prototype.setupLevel = function (levelNumber) {
+	  this.renderer.clearCanvas();
+	  this.counter = 0;
 	  var levelArrangements = this.solutions.arrangements();
-	  createTileObjects(levelArrangements[levelNumber]);
-	  renderAllShapes(this, objectIndex);
+	  this.objectIndex = {};
+	  createTileObjects(this, levelArrangements[levelNumber]);
+	  renderAllShapes(this, this.objectIndex);
 	};
 
 	var renderAllShapes = function renderAllShapes(self, objectIndex) {
 	  for (var key in objectIndex) {
-	    var tileNumber = objectIndex[key].tileNumber;
-	    var currentOrientation = objectIndex[key].currentOrientation;
-	    var shapeType = objectIndex[key].shapeType;
+	    var tileNumber = self.objectIndex[key].tileNumber;
+	    var currentOrientation = self.objectIndex[key].currentOrientation;
+	    var shapeType = self.objectIndex[key].shapeType;
 
 	    self.renderer.renderTile(shapeType, tileNumber, currentOrientation);
 	  }
 	};
 
-	var createTileObjects = function createTileObjects(levelArrangement) {
+	var createTileObjects = function createTileObjects(self, levelArrangement) {
 	  for (var i = 0; i < levelArrangement.length; i++) {
 	    var _location = levelArrangement[i][0];
 	    var orientation = levelArrangement[i][2] || "all";
@@ -122,19 +124,19 @@
 
 	    switch (shapeType) {
 	      case "spoke":
-	        objectIndex[_location] = new Spoke(_location, orientation);
+	        self.objectIndex[_location] = new Spoke(_location, orientation);
 	        break;
 	      case "arc":
-	        objectIndex[_location] = new Arc(_location, orientation);
+	        self.objectIndex[_location] = new Arc(_location, orientation);
 	        break;
 	      case "line":
-	        objectIndex[_location] = new Line(_location, orientation);
+	        self.objectIndex[_location] = new Line(_location, orientation);
 	        break;
 	      case "doubleArc":
-	        objectIndex[_location] = new DoubleArc(_location, orientation);
+	        self.objectIndex[_location] = new DoubleArc(_location, orientation);
 	        break;
 	      case "quadArc":
-	        objectIndex[_location] = new QuadArc(_location, orientation);
+	        self.objectIndex[_location] = new QuadArc(_location, orientation);
 	        break;
 	    }
 	  }
@@ -146,32 +148,53 @@
 	  this.setupLevel(levelNumber);
 
 	  $('#canvas').click(function (e) {
+	    if (firstClick(self)) {
+	      startTimer(self);
+	    }
+	    self.counter++;
+
 	    var clickedX = e.pageX - this.offsetLeft;
 	    var clickedY = e.pageY - this.offsetTop;
 	    var location = self.grid.findLocation(clickedX, clickedY);
-	    if (self.objectIndex[location] != null) {
-	      var object = self.objectIndex[location];
-	      var oldOrientation = object.currentOrientation;
-	      var newOrientation = rotations[oldOrientation];
-	      var shapeType = object.shapeType;
 
-	      if (location != null && object != null) {
-	        object.currentOrientation = newOrientation;
-	        self.renderer.renderTile(shapeType, location, newOrientation);
-	      }
-	      if (youWon(objectIndex)) {
+	    if (userClickedLiveTile(location, self)) {
+	      rotateTile(location, self);
+	    }
+
+	    if (youWon(objectIndex)) {
+	      (function () {
+	        var gameTime = getGameLength(self);
 	        $('canvas').off('click');
 	        setTimeout(function () {
-	          self.effects.flash();
+	          showWinStats(self, levelNumber, gameTime);
 	          $('canvas').click(function () {
-	            self.effects.levelTransition(levelNumber);
-	            self.effects.flash();
-	            self.playLevel(levelNumber + 1);
+	            startNextLevel(self, levelNumber);
 	          });
 	        }, 300);
-	      }
+	      })();
 	    }
 	  });
+	};
+
+	var firstClick = function firstClick(self) {
+	  return self.counter === 0;
+	};
+
+	var startTimer = function startTimer(self) {
+	  self.startTime = new Date().getTime();
+	};
+
+	var userClickedLiveTile = function userClickedLiveTile(location, self) {
+	  return location != null && self.objectIndex[location] != null;
+	};
+
+	var rotateTile = function rotateTile(location, self) {
+	  var object = self.objectIndex[location];
+	  var oldOrientation = object.currentOrientation;
+	  var newOrientation = rotations[oldOrientation];
+	  var shapeType = object.shapeType;
+	  object.currentOrientation = newOrientation;
+	  self.renderer.renderTile(shapeType, location, newOrientation);
 	};
 
 	var youWon = function youWon(objectIndex) {
@@ -183,6 +206,22 @@
 	    return object.currentOrientation === object.winningOrientation;
 	  };
 	  return values.every(confirmTrue);
+	};
+
+	var getGameLength = function getGameLength(self) {
+	  var endTime = new Date().getTime();
+	  return Math.floor((endTime - self.startTime) / 1000);
+	};
+
+	var showWinStats = function showWinStats(self, levelNumber, gameTime) {
+	  self.effects.flash();
+	  self.effects.levelStats(levelNumber, gameTime);
+	};
+
+	var startNextLevel = function startNextLevel(self, levelNumber) {
+	  self.effects.levelTransition(levelNumber);
+	  self.effects.flash();
+	  self.playLevel(levelNumber + 1);
 	};
 
 	var rotations = {
@@ -201,7 +240,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * jQuery JavaScript Library v2.2.2
+	 * jQuery JavaScript Library v2.2.3
 	 * http://jquery.com/
 	 *
 	 * Includes Sizzle.js
@@ -211,7 +250,7 @@
 	 * Released under the MIT license
 	 * http://jquery.org/license
 	 *
-	 * Date: 2016-03-17T17:51Z
+	 * Date: 2016-04-05T19:26Z
 	 */
 
 	(function( global, factory ) {
@@ -267,7 +306,7 @@
 
 
 	var
-		version = "2.2.2",
+		version = "2.2.3",
 
 		// Define a local copy of jQuery
 		jQuery = function( selector, context ) {
@@ -9677,7 +9716,7 @@
 			// If it fails, this function gets "jqXHR", "status", "error"
 			} ).always( callback && function( jqXHR, status ) {
 				self.each( function() {
-					callback.apply( self, response || [ jqXHR.responseText, status, jqXHR ] );
+					callback.apply( this, response || [ jqXHR.responseText, status, jqXHR ] );
 				} );
 			} );
 		}
@@ -10080,6 +10119,10 @@
 	      this.renderQuadArc(location);
 	      break;
 	  }
+	};
+
+	Renderer.prototype.clearCanvas = function () {
+	  this.context.clearRect(0, 0, 600, 400);
 	};
 
 	Renderer.prototype.renderSpoke = function (location, orientation) {
@@ -10589,6 +10632,11 @@
 	  $('canvas').off('click');
 	};
 
+	Effects.prototype.levelStats = function (levelNumber, gameTime) {
+	  $('footer').append("<div class='level-info'></div>");
+	  $('.level-info').empty().append('level ' + (levelNumber + 1) + ' completed in ' + gameTime + ' seconds');
+	};
+
 	Effects.prototype.introSequence = function (self) {
 	  $('canvas').hide();
 	  $('.level-announcements').hide();
@@ -10599,7 +10647,7 @@
 	    $('.level-announcements').fadeOut(1000);
 	    $('canvas').delay(2000).fadeIn(1000);
 	    $('.game-div').off('click');
-	    self.playLevel(0);
+	    self.playLevel(3);
 	  });
 	};
 
@@ -10610,6 +10658,7 @@
 	  $('.game-canvas').fadeOut(1000);
 	  $('.level-announcements').fadeIn(1000);
 	  $('.level-announcements').fadeOut(1000);
+	  $('.level-info').fadeOut(300);
 	  $('.game-canvas').delay(1000).fadeIn(1000);
 	};
 
