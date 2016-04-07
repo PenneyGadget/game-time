@@ -10650,7 +10650,7 @@
 	    $('.level-announcements').fadeOut(1000);
 	    $('canvas').delay(2000).fadeIn(1000);
 	    $('.game-div').off('click');
-	    self.playLevel(3);
+	    self.playLevel(0);
 	  });
 	};
 
