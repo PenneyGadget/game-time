@@ -1,7 +1,7 @@
 body {
   background-color: #8C6954;
   font-family: 'Quicksand', sans-serif;
-  margin-top: 60px;
+  margin-top: 55px;
 }
 
 .header {
@@ -11,7 +11,7 @@ body {
 
 .game-div {
   margin: auto;
-  margin-top: 80px;
+  margin-top: 40px;
   width: 600px;
   height: 400px;
 }
@@ -42,4 +42,14 @@ body {
   text-align: center;
   position: absolute;
   z-index: 3;
+}
+
+footer {
+  font-family: 'Quicksand', sans-serif;
+  color: #260126;
+  font-size: 30px;
+  padding-top: 40px;
+  position: fixed;
+  text-align: center;
+  width: 100%;
 }
