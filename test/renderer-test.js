@@ -8,14 +8,14 @@ it('Spoke is a function', function() {
 
 it('findStartX function returns correct X coordinate for a tile', function() {
   let renderer = new Renderer(Game);
-  assert.equal(260, renderer.findStartX(27));
-  assert.equal(500, renderer.findStartX(108));
-  assert.equal(60, renderer.findStartX(85));
+  assert.equal(260, renderer.findStartX("F7"));
+  assert.equal(500, renderer.findStartX("L9"));
+  assert.equal(60, renderer.findStartX("A6"));
 });
 
 it('findStartY function returns correct Y coordinate for a tile', function() {
   let renderer = new Renderer(Game);
-  assert.equal(340, renderer.findStartY(99));
-  assert.equal(180, renderer.findStartY(1));
-  assert.equal(20, renderer.findStartY(68));
+  assert.equal(340, renderer.findStartY("C9"));
+  assert.equal(180, renderer.findStartY("F5"));
+  assert.equal(20, renderer.findStartY("L1"));
 });
