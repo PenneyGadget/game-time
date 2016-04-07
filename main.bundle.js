@@ -62,6 +62,12 @@
 	  return this[Math.floor(Math.random() * this.length)];
 	};
 
+	Array.prototype.diff = function (a) {
+	  return this.filter(function (i) {
+	    return a.indexOf(i) < 0;
+	  });
+	};
+
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
@@ -77,10 +83,12 @@
 	var QuadArc = __webpack_require__(9);
 	var Grid = __webpack_require__(4);
 	var Solutions = __webpack_require__(10);
-	var Effects = __webpack_require__(11);
+	var Effects = __webpack_require__(13);
+	var audio = new Audio('audio/Tenpuu.mp3');
 
 	var Game = function Game(context, canvas) {
 	  this.context = context;
+	  this.canvas = canvas;
 	  this.width = canvas.width;
 	  this.height = canvas.height;
 	  this.context.lineWidth = 4;
@@ -89,7 +97,7 @@
 	  this.renderer = renderer;
 	  var grid = new Grid();
 	  this.grid = grid;
-	  var solutions = new Solutions();
+	  var solutions = new Solutions(this);
 	  this.solutions = solutions;
 	  var effects = new Effects();
 	  this.effects = effects;
@@ -98,14 +106,15 @@
 
 	Game.prototype.startGame = function () {
 	  this.effects.introSequence(this);
+	  audio.play();
 	};
 
 	Game.prototype.setupLevel = function (levelNumber) {
-	  this.renderer.clearCanvas();
 	  this.counter = 0;
-	  var levelArrangements = this.solutions.arrangements();
+	  this.renderer.clearCanvas();
+	  var levelArrangement = this.solutions.setArrangement(levelNumber);
 	  this.objectIndex = {};
-	  createTileObjects(this, levelArrangements[levelNumber]);
+	  createTileObjects(this, levelArrangement);
 	  renderAllShapes(this, this.objectIndex);
 	};
 
@@ -10284,128 +10293,131 @@
 
 	var tileNumber = function tileNumber(x, y) {
 	  var tilesByCoordinate = {
-	    60: { 20: 57, 60: 69, 100: 73, 140: 77, 180: 81, 220: 85, 260: 89, 300: 93, 340: 97 },
-	    100: { 20: 58, 60: 70, 100: 74, 140: 78, 180: 82, 220: 86, 260: 90, 300: 94, 340: 98 },
-	    140: { 20: 59, 60: 31, 100: 39, 140: 41, 180: 43, 220: 45, 260: 47, 300: 49, 340: 99 },
-	    180: { 20: 60, 60: 32, 100: 13, 140: 19, 180: 21, 220: 23, 260: 25, 300: 50, 340: 100 },
-	    220: { 20: 61, 60: 33, 100: 14, 140: 3, 180: 7, 220: 9, 260: 26, 300: 51, 340: 101 },
-	    260: { 20: 62, 60: 34, 100: 15, 140: 4, 180: 1, 220: 10, 260: 27, 300: 52, 340: 102 },
-	    300: { 20: 63, 60: 35, 100: 16, 140: 5, 180: 2, 220: 11, 260: 28, 300: 53, 340: 103 },
-	    340: { 20: 64, 60: 36, 100: 17, 140: 6, 180: 8, 220: 12, 260: 29, 300: 54, 340: 104 },
-	    380: { 20: 65, 60: 37, 100: 18, 140: 20, 180: 22, 220: 24, 260: 30, 300: 55, 340: 105 }
+	    60: { 20: 'A1', 60: 'A2', 100: 'A3', 140: 'A4', 180: 'A5', 220: 'A6', 260: 'A7', 300: 'A8', 340: 'A9' },
+	    100: { 20: 'B1', 60: 'B2', 100: 'B3', 140: 'B4', 180: 'B5', 220: 'B6', 260: 'B7', 300: 'B8', 340: 'B9' },
+	    140: { 20: 'C1', 60: 'C2', 100: 'C3', 140: 'C4', 180: 'C5', 220: 'C6', 260: 'C7', 300: 'C8', 340: 'C9' },
+	    180: { 20: 'D1', 60: 'D2', 100: 'D3', 140: 'D4', 180: 'D5', 220: 'D6', 260: 'D7', 300: 'D8', 340: 'D9' },
+	    220: { 20: 'E1', 60: 'E2', 100: 'E3', 140: 'E4', 180: 'E5', 220: 'E6', 260: 'E7', 300: 'E8', 340: 'E9' },
+	    260: { 20: 'F1', 60: 'F2', 100: 'F3', 140: 'F4', 180: 'F5', 220: 'F6', 260: 'F7', 300: 'F8', 340: 'F9' },
+	    300: { 20: 'G1', 60: 'G2', 100: 'G3', 140: 'G4', 180: 'G5', 220: 'G6', 260: 'G7', 300: 'G8', 340: 'G9' },
+	    340: { 20: 'H1', 60: 'H2', 100: 'H3', 140: 'H4', 180: 'H5', 220: 'H6', 260: 'H7', 300: 'H8', 340: 'H9' },
+	    380: { 20: 'I1', 60: 'I2', 100: 'I3', 140: 'I4', 180: 'I5', 220: 'I6', 260: 'I7', 300: 'I8', 340: 'I9' },
+	    420: { 20: 'J1', 60: 'J2', 100: 'J3', 140: 'J4', 180: 'J5', 220: 'J6', 260: 'J7', 300: 'J8', 340: 'J9' },
+	    460: { 20: 'K1', 60: 'K2', 100: 'K3', 140: 'K4', 180: 'K5', 220: 'K6', 260: 'K7', 300: 'K8', 340: 'K9' },
+	    500: { 20: 'L1', 60: 'L2', 100: 'L3', 140: 'L4', 180: 'L5', 220: 'L6', 260: 'L7', 300: 'L8', 340: 'L9' }
 	  };
 	  return tilesByCoordinate[x][y];
 	};
 
 	var locationsIndex = {
-	  1: { 'x': 260, 'y': 180 },
-	  2: { 'x': 300, 'y': 180 },
-	  3: { 'x': 220, 'y': 140 },
-	  4: { 'x': 260, 'y': 140 },
-	  5: { 'x': 300, 'y': 140 },
-	  6: { 'x': 340, 'y': 140 },
-	  7: { 'x': 220, 'y': 180 },
-	  8: { 'x': 340, 'y': 180 },
-	  9: { 'x': 220, 'y': 220 },
-	  10: { 'x': 260, 'y': 220 },
-	  11: { 'x': 300, 'y': 220 },
-	  12: { 'x': 340, 'y': 220 },
-	  13: { 'x': 180, 'y': 100 },
-	  14: { 'x': 220, 'y': 100 },
-	  15: { 'x': 260, 'y': 100 },
-	  16: { 'x': 300, 'y': 100 },
-	  17: { 'x': 340, 'y': 100 },
-	  18: { 'x': 380, 'y': 100 },
-	  19: { 'x': 180, 'y': 140 },
-	  20: { 'x': 380, 'y': 140 },
-	  21: { 'x': 180, 'y': 180 },
-	  22: { 'x': 380, 'y': 180 },
-	  23: { 'x': 180, 'y': 220 },
-	  24: { 'x': 380, 'y': 220 },
-	  25: { 'x': 180, 'y': 260 },
-	  26: { 'x': 220, 'y': 260 },
-	  27: { 'x': 260, 'y': 260 },
-	  28: { 'x': 300, 'y': 260 },
-	  29: { 'x': 340, 'y': 260 },
-	  30: { 'x': 380, 'y': 260 },
-	  31: { 'x': 140, 'y': 60 },
-	  32: { 'x': 180, 'y': 60 },
-	  33: { 'x': 220, 'y': 60 },
-	  34: { 'x': 260, 'y': 60 },
-	  35: { 'x': 300, 'y': 60 },
-	  36: { 'x': 340, 'y': 60 },
-	  37: { 'x': 380, 'y': 60 },
-	  38: { 'x': 420, 'y': 60 },
-	  39: { 'x': 140, 'y': 100 },
-	  40: { 'x': 420, 'y': 100 },
-	  41: { 'x': 140, 'y': 140 },
-	  42: { 'x': 420, 'y': 140 },
-	  43: { 'x': 140, 'y': 180 },
-	  44: { 'x': 420, 'y': 180 },
-	  45: { 'x': 140, 'y': 220 },
-	  46: { 'x': 420, 'y': 220 },
-	  47: { 'x': 140, 'y': 260 },
-	  48: { 'x': 420, 'y': 260 },
-	  49: { 'x': 140, 'y': 300 },
-	  50: { 'x': 180, 'y': 300 },
-	  51: { 'x': 220, 'y': 300 },
-	  52: { 'x': 260, 'y': 300 },
-	  53: { 'x': 300, 'y': 300 },
-	  54: { 'x': 340, 'y': 300 },
-	  55: { 'x': 380, 'y': 300 },
-	  56: { 'x': 420, 'y': 300 },
-	  57: { 'x': 60, 'y': 20 },
-	  58: { 'x': 100, 'y': 20 },
-	  59: { 'x': 140, 'y': 20 },
-	  60: { 'x': 180, 'y': 20 },
-	  61: { 'x': 220, 'y': 20 },
-	  62: { 'x': 260, 'y': 20 },
-	  63: { 'x': 300, 'y': 20 },
-	  64: { 'x': 340, 'y': 20 },
-	  65: { 'x': 380, 'y': 20 },
-	  66: { 'x': 420, 'y': 20 },
-	  67: { 'x': 460, 'y': 20 },
-	  68: { 'x': 500, 'y': 20 },
-	  69: { 'x': 60, 'y': 60 },
-	  70: { 'x': 100, 'y': 60 },
-	  71: { 'x': 460, 'y': 60 },
-	  72: { 'x': 500, 'y': 60 },
-	  73: { 'x': 60, 'y': 100 },
-	  74: { 'x': 100, 'y': 100 },
-	  75: { 'x': 460, 'y': 100 },
-	  76: { 'x': 500, 'y': 100 },
-	  77: { 'x': 60, 'y': 140 },
-	  78: { 'x': 100, 'y': 140 },
-	  79: { 'x': 460, 'y': 140 },
-	  80: { 'x': 500, 'y': 140 },
-	  81: { 'x': 60, 'y': 180 },
-	  82: { 'x': 100, 'y': 180 },
-	  83: { 'x': 460, 'y': 180 },
-	  84: { 'x': 500, 'y': 180 },
-	  85: { 'x': 60, 'y': 220 },
-	  86: { 'x': 100, 'y': 220 },
-	  87: { 'x': 460, 'y': 220 },
-	  88: { 'x': 500, 'y': 220 },
-	  89: { 'x': 60, 'y': 260 },
-	  90: { 'x': 100, 'y': 260 },
-	  91: { 'x': 460, 'y': 260 },
-	  92: { 'x': 500, 'y': 260 },
-	  93: { 'x': 60, 'y': 300 },
-	  94: { 'x': 100, 'y': 300 },
-	  95: { 'x': 460, 'y': 300 },
-	  96: { 'x': 500, 'y': 300 },
-	  97: { 'x': 60, 'y': 340 },
-	  98: { 'x': 100, 'y': 340 },
-	  99: { 'x': 140, 'y': 340 },
-	  100: { 'x': 180, 'y': 340 },
-	  101: { 'x': 220, 'y': 340 },
-	  102: { 'x': 260, 'y': 340 },
-	  103: { 'x': 300, 'y': 340 },
-	  104: { 'x': 340, 'y': 340 },
-	  105: { 'x': 380, 'y': 340 },
-	  106: { 'x': 420, 'y': 340 },
-	  107: { 'x': 460, 'y': 340 },
-	  108: { 'x': 500, 'y': 340 }
+	  'A1': { 'x': 60, 'y': 20 },
+	  'A2': { 'x': 60, 'y': 60 },
+	  'A3': { 'x': 60, 'y': 100 },
+	  'A4': { 'x': 60, 'y': 140 },
+	  'A5': { 'x': 60, 'y': 180 },
+	  'A6': { 'x': 60, 'y': 220 },
+	  'A7': { 'x': 60, 'y': 260 },
+	  'A8': { 'x': 60, 'y': 300 },
+	  'A9': { 'x': 60, 'y': 340 },
+	  'B1': { 'x': 100, 'y': 20 },
+	  'B2': { 'x': 100, 'y': 60 },
+	  'B3': { 'x': 100, 'y': 100 },
+	  'B4': { 'x': 100, 'y': 140 },
+	  'B5': { 'x': 100, 'y': 180 },
+	  'B6': { 'x': 100, 'y': 220 },
+	  'B7': { 'x': 100, 'y': 260 },
+	  'B8': { 'x': 100, 'y': 300 },
+	  'B9': { 'x': 100, 'y': 340 },
+	  'C1': { 'x': 140, 'y': 20 },
+	  'C2': { 'x': 140, 'y': 60 },
+	  'C3': { 'x': 140, 'y': 100 },
+	  'C4': { 'x': 140, 'y': 140 },
+	  'C5': { 'x': 140, 'y': 180 },
+	  'C6': { 'x': 140, 'y': 220 },
+	  'C7': { 'x': 140, 'y': 260 },
+	  'C8': { 'x': 140, 'y': 300 },
+	  'C9': { 'x': 140, 'y': 340 },
+	  'D1': { 'x': 180, 'y': 20 },
+	  'D2': { 'x': 180, 'y': 60 },
+	  'D3': { 'x': 180, 'y': 100 },
+	  'D4': { 'x': 180, 'y': 140 },
+	  'D5': { 'x': 180, 'y': 180 },
+	  'D6': { 'x': 180, 'y': 220 },
+	  'D7': { 'x': 180, 'y': 260 },
+	  'D8': { 'x': 180, 'y': 300 },
+	  'D9': { 'x': 180, 'y': 340 },
+	  'E1': { 'x': 220, 'y': 20 },
+	  'E2': { 'x': 220, 'y': 60 },
+	  'E3': { 'x': 220, 'y': 100 },
+	  'E4': { 'x': 220, 'y': 140 },
+	  'E5': { 'x': 220, 'y': 180 },
+	  'E6': { 'x': 220, 'y': 220 },
+	  'E7': { 'x': 220, 'y': 260 },
+	  'E8': { 'x': 220, 'y': 300 },
+	  'E9': { 'x': 220, 'y': 340 },
+	  'F1': { 'x': 260, 'y': 20 },
+	  'F2': { 'x': 260, 'y': 60 },
+	  'F3': { 'x': 260, 'y': 100 },
+	  'F4': { 'x': 260, 'y': 140 },
+	  'F5': { 'x': 260, 'y': 180 },
+	  'F6': { 'x': 260, 'y': 220 },
+	  'F7': { 'x': 260, 'y': 260 },
+	  'F8': { 'x': 260, 'y': 300 },
+	  'F9': { 'x': 260, 'y': 340 },
+	  'G1': { 'x': 300, 'y': 20 },
+	  'G2': { 'x': 300, 'y': 60 },
+	  'G3': { 'x': 300, 'y': 100 },
+	  'G4': { 'x': 300, 'y': 140 },
+	  'G5': { 'x': 300, 'y': 180 },
+	  'G6': { 'x': 300, 'y': 220 },
+	  'G7': { 'x': 300, 'y': 260 },
+	  'G8': { 'x': 300, 'y': 300 },
+	  'G9': { 'x': 300, 'y': 340 },
+	  'H1': { 'x': 340, 'y': 20 },
+	  'H2': { 'x': 340, 'y': 60 },
+	  'H3': { 'x': 340, 'y': 100 },
+	  'H4': { 'x': 340, 'y': 140 },
+	  'H5': { 'x': 340, 'y': 180 },
+	  'H6': { 'x': 340, 'y': 220 },
+	  'H7': { 'x': 340, 'y': 260 },
+	  'H8': { 'x': 340, 'y': 300 },
+	  'H9': { 'x': 340, 'y': 340 },
+	  'I1': { 'x': 380, 'y': 20 },
+	  'I2': { 'x': 380, 'y': 60 },
+	  'I3': { 'x': 380, 'y': 100 },
+	  'I4': { 'x': 380, 'y': 140 },
+	  'I5': { 'x': 380, 'y': 180 },
+	  'I6': { 'x': 380, 'y': 220 },
+	  'I7': { 'x': 380, 'y': 260 },
+	  'I8': { 'x': 380, 'y': 300 },
+	  'I9': { 'x': 380, 'y': 340 },
+	  'J1': { 'x': 420, 'y': 20 },
+	  'J2': { 'x': 420, 'y': 60 },
+	  'J3': { 'x': 420, 'y': 100 },
+	  'J4': { 'x': 420, 'y': 140 },
+	  'J5': { 'x': 420, 'y': 180 },
+	  'J6': { 'x': 420, 'y': 220 },
+	  'J7': { 'x': 420, 'y': 260 },
+	  'J8': { 'x': 420, 'y': 300 },
+	  'J9': { 'x': 420, 'y': 340 },
+	  'K1': { 'x': 460, 'y': 20 },
+	  'K2': { 'x': 460, 'y': 60 },
+	  'K3': { 'x': 460, 'y': 100 },
+	  'K4': { 'x': 460, 'y': 140 },
+	  'K5': { 'x': 460, 'y': 180 },
+	  'K6': { 'x': 460, 'y': 220 },
+	  'K7': { 'x': 460, 'y': 260 },
+	  'K8': { 'x': 460, 'y': 300 },
+	  'K9': { 'x': 460, 'y': 340 },
+	  'L1': { 'x': 500, 'y': 20 },
+	  'L2': { 'x': 500, 'y': 60 },
+	  'L3': { 'x': 500, 'y': 100 },
+	  'L4': { 'x': 500, 'y': 140 },
+	  'L5': { 'x': 500, 'y': 180 },
+	  'L6': { 'x': 500, 'y': 220 },
+	  'L7': { 'x': 500, 'y': 260 },
+	  'L8': { 'x': 500, 'y': 300 },
+	  'L9': { 'x': 500, 'y': 340 }
 	};
 
 	module.exports = Grid;
@@ -10577,36 +10589,375 @@
 
 /***/ },
 /* 10 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var Solutions = function Solutions() {
-	  this.arrangements = arrangements;
+	var PatternGenerator = __webpack_require__(11);
+
+	var Solutions = function Solutions(game) {
+	  this.game = game;
+	  var patternGenerator = new PatternGenerator();
+	  this.patternGenerator = patternGenerator;
 	};
 
-	var arrangements = function arrangements() {
-	  return [levelOneArrangement, levelTwoArrangement, levelThreeArrangement, levelFourArrangement, levelFiveArrangement, levelSixArrangement, levelSevenArrangement];
+	Solutions.prototype.setArrangement = function (levelNumber) {
+	  if (levelNumber === 0) {
+	    return levelOneArrangement;
+	  }
+	  if (levelNumber === 1) {
+	    return levelTwoArrangement;
+	  }
+	  if (levelNumber === 2) {
+	    return levelThreeArrangement;
+	  }
+	  if (levelNumber === 3) {
+	    return levelFourArrangement;
+	  }
+	  if (levelNumber === 4) {
+	    return levelFiveArrangement;
+	  }
+	  if (levelNumber === 5) {
+	    return levelSixArrangement;
+	  }
+	  if (levelNumber === 6) {
+	    return levelSevenArrangement;
+	  }
+	  if (levelNumber > 1) {
+	    return this.patternGenerator.createPattern(this.game, levelNumber);
+	  }
 	};
 
-	var levelOneArrangement = [[1, "spoke", "right"], [2, "spoke", "left"]];
+	var levelOneArrangement = [["F5", "spoke", "right"], ["G5", "spoke", "left"]];
 
-	var levelTwoArrangement = [[1, "arc", "bottom"], [2, "arc", "right"], [4, "arc", "left"], [5, "arc", "top"]];
+	var levelTwoArrangement = [["F5", "arc", "bottom"], ["G5", "arc", "right"], ["F4", "arc", "left"], ["G4", "arc", "top"]];
 
-	var levelThreeArrangement = [[1, "arc", "bottom"], [2, "arc", "top"], [3, "arc", "left"], [4, "arc", "top"], [5, "spoke", "right"], [6, "arc", "top"], [7, "spoke", "top"], [8, "spoke", "top"], [9, "spoke", "right"], [10, "spoke", "left"], [11, "arc", "bottom"], [12, "spoke", "left"]];
+	var levelThreeArrangement = [["F5", "arc", "bottom"], ["G5", "arc", "top"], ["E4", "arc", "left"], ["F4", "arc", "top"], ["G4", "spoke", "right"], ["H4", "arc", "top"], ["E5", "spoke", "top"], ["H5", "spoke", "top"], ["E6", "spoke", "right"], ["F6", "spoke", "left"], ["G6", "arc", "bottom"], ["H6", "spoke", "left"]];
 
-	var levelFourArrangement = [[1, "line", "horizontal"], [2, "arc", "top"], [3, "arc", "left"], [4, "arc", "right"], [5, "arc", "bottom"], [6, "line", "horizontal"], [7, "arc", "bottom"], [8, "arc", "left"], [9, "line", "horizontal"], [10, "arc", "top"], [11, "line", "vertical"], [12, "arc", "bottom"], [13, "arc", "left"], [14, "spoke", "left"], [15, "arc", "left"], [16, "arc", "top"], [17, "spoke", "right"], [18, "spoke", "left"], [19, "line", "vertical"], [20, "arc", "top"], [21, "line", "vertical"], [22, "arc", "right"], [23, "arc", "bottom"], [24, "arc", "top"], [25, "spoke", "right"], [26, "line", "horizontal"], [27, "arc", "right"], [28, "arc", "bottom"], [29, "line", "horizontal"], [30, "arc", "right"]];
+	var levelFourArrangement = [["F5", "line", "horizontal"], ["G5", "arc", "top"], ["E4", "arc", "left"], ["F4", "arc", "right"], ["G4", "arc", "bottom"], ["H4", "line", "horizontal"], ["E5", "arc", "bottom"], ["H5", "arc", "left"], ["E6", "line", "horizontal"], ["F6", "arc", "top"], ["G6", "line", "vertical"], ["H6", "arc", "bottom"], ["D3", "arc", "left"], ["E3", "spoke", "left"], ["F3", "arc", "left"], ["G3", "arc", "top"], ["H3", "spoke", "right"], ["I3", "spoke", "left"], ["D4", "line", "vertical"], ["I4", "arc", "top"], ["D5", "line", "vertical"], ["I5", "arc", "right"], ["D6", "arc", "bottom"], ["I6", "arc", "top"], ["D7", "spoke", "right"], ["E7", "line", "horizontal"], ["F7", "arc", "right"], ["G7", "arc", "bottom"], ["H7", "line", "horizontal"], ["I7", "arc", "right"]];
 
-	var levelFiveArrangement = [[1, "doubleArc", "left"], [2, "doubleArc", "right"], [3, "spoke", "bottom"], [4, "doubleArc", "right"], [5, "doubleArc", "left"], [6, "spoke", "bottom"], [7, "arc", "bottom"], [8, "arc", "right"], [9, "arc", "left"], [10, "doubleArc", "top"], [11, "doubleArc", "top"], [12, "arc", "top"], [15, "arc", "left"], [16, "arc", "top"], [26, "arc", "bottom"], [27, "line", "horizontal"], [28, "line", "horizontal"], [29, "arc", "right"]];
+	var levelFiveArrangement = [["F5", "doubleArc", "left"], ["G5", "doubleArc", "right"], ["E4", "spoke", "bottom"], ["F4", "doubleArc", "right"], ["G4", "doubleArc", "left"], ["H4", "spoke", "bottom"], ["E5", "arc", "bottom"], ["H5", "arc", "right"], ["E6", "arc", "left"], ["F6", "doubleArc", "top"], ["G6", "doubleArc", "top"], ["H6", "arc", "top"], ["F3", "arc", "left"], ["G3", "arc", "top"], ["E7", "arc", "bottom"], ["F7", "line", "horizontal"], ["G7", "line", "horizontal"], ["H7", "arc", "right"]];
 
-	var levelSixArrangement = [[1, "quadArc", ""], [2, "quadArc", ""], [3, "arc", "bottom"], [4, "quadArc", ""], [5, "quadArc", ""], [6, "quadArc", ""], [7, "spoke", "right"], [8, "quadArc", ""], [9, "arc", "left"], [10, "quadArc", ""], [11, "quadArc", ""], [12, "quadArc", ""], [14, "arc", "left"], [15, "doubleArc", "bottom"], [16, "doubleArc", "bottom"], [17, "doubleArc", "bottom"], [18, "arc", "top"], [20, "arc", "right"], [22, "spoke", "left"], [24, "arc", "top"], [26, "arc", "bottom"], [27, "doubleArc", "top"], [28, "doubleArc", "top"], [29, "doubleArc", "top"], [30, "arc", "right"]];
+	var levelSixArrangement = [["F5", "quadArc", ""], ["G5", "quadArc", ""], ["E4", "arc", "bottom"], ["F4", "quadArc", ""], ["G4", "quadArc", ""], ["H4", "quadArc", ""], ["E5", "spoke", "right"], ["H5", "quadArc", ""], ["E6", "arc", "left"], ["F6", "quadArc", ""], ["G6", "quadArc", ""], ["H6", "quadArc", ""], ["E3", "arc", "left"], ["F3", "doubleArc", "bottom"], ["G3", "doubleArc", "bottom"], ["H3", "doubleArc", "bottom"], ["I3", "arc", "top"], ["I4", "arc", "right"], ["I5", "spoke", "left"], ["I6", "arc", "top"], ["E7", "arc", "bottom"], ["F7", "doubleArc", "top"], ["G7", "doubleArc", "top"], ["H7", "doubleArc", "top"], ["I7", "arc", "right"]];
 
-	var levelSevenArrangement = [[1, "spoke", "top"], [2, "spoke", "top"], [4, "doubleArc", "right"], [5, "doubleArc", "left"], [9, "spoke", "right"], [10, "arc", "top"], [11, "arc", "left"], [12, "spoke", "left"], [14, "spoke", "top"], [15, "line", "vertical"], [16, "line", "vertical"], [17, "spoke", "top"], [27, "spoke", "top"], [28, "spoke", "top"], [33, "arc", "left"], [34, "arc", "top"], [35, "arc", "left"], [36, "arc", "top"], [51, "spoke", "bottom"], [52, "arc", "left"], [53, "arc", "top"], [54, "spoke", "bottom"], [101, "arc", "bottom"], [102, "doubleArc", "top"], [103, "doubleArc", "top"], [104, "arc", "right"]];
+	var levelSevenArrangement = [["F5", "spoke", "top"], ["G5", "spoke", "top"], ["F4", "doubleArc", "right"], ["G4", "doubleArc", "left"], ["E6", "spoke", "right"], ["F6", "arc", "top"], ["G6", "arc", "left"], ["H6", "spoke", "left"], ["E3", "spoke", "top"], ["F3", "line", "vertical"], ["G3", "line", "vertical"], ["H3", "spoke", "top"], ["F7", "spoke", "top"], ["G7", "spoke", "top"], ["E2", "arc", "left"], ["F2", "arc", "top"], ["G2", "arc", "left"], ["H2", "arc", "top"], ["E8", "spoke", "bottom"], ["F8", "arc", "left"], ["G8", "arc", "top"], ["H8", "spoke", "bottom"], ["E9", "arc", "bottom"], ["F9", "doubleArc", "top"], ["G9", "doubleArc", "top"], ["H9", "arc", "right"]];
 
 	module.exports = Solutions;
 
 /***/ },
 /* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var Tadpole = __webpack_require__(12);
+
+	var PatternGenerator = function PatternGenerator(game) {
+	  this.game = game;
+	};
+
+	PatternGenerator.prototype.createPattern = function (game, levelNumber) {
+	  var canvasLayout = this.canvasMatcher(levelNumber);
+	  var tadpoleIndex = createTadpoles(game, canvasLayout, this);
+	  return createShapeDetails(tadpoleIndex);
+	};
+
+	var createTadpoles = function createTadpoles(game, canvasLayout, self) {
+	  self.tadpoleHolder = {};
+	  for (var key in canvasLayout) {
+	    var _location = key;
+	    var constraints = canvasLayout[key];
+	    self.tadpoleHolder[_location] = new Tadpole(_location, constraints, canvasLayout, self);
+	  }
+	  return self.tadpoleHolder;
+	};
+
+	var createShapeDetails = function createShapeDetails(tadpoleIndex) {
+	  var arrayOfTileDetails = [];
+	  for (var key in tadpoleIndex) {
+	    var _location2 = key;
+	    var tadpoleObject = tadpoleIndex[_location2];
+	    var tC = tadpoleObject.shapeConstraints();
+	    if (tC[0] === "n" && tC[1] === "n" && tC[2] === "n" && tC[3] === "n") {} else {
+	      arrayOfTileDetails.push(tadpoleObject.finalDetails());
+	    }
+	  }
+	  return arrayOfTileDetails;
+	};
+
+	var smallCanvas = {
+	  "E4": ["n", "u", "u", "n"],
+	  "F4": ["n", "u", "u", "u"],
+	  "G4": ["n", "u", "u", "u"],
+	  "H4": ["n", "n", "u", "u"],
+	  "E5": ["u", "u", "u", "n"],
+	  "F5": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "H5": ["u", "n", "u", "u"],
+	  "E6": ["u", "u", "n", "n"],
+	  "F6": ["u", "u", "n", "u"],
+	  "G6": ["u", "u", "n", "u"],
+	  "H6": ["u", "n", "n", "u"]
+	};
+
+	var mediumCanvas = {
+	  "D3": ["n", "u", "u", "n"],
+	  "D4": ["u", "u", "u", "n"],
+	  "D5": ["u", "u", "u", "n"],
+	  "D6": ["u", "u", "u", "n"],
+	  "D7": ["u", "u", "n", "n"],
+	  "E3": ["n", "u", "u", "u"],
+	  "E4": ["u", "u", "u", "u"],
+	  "E5": ["u", "u", "u", "u"],
+	  "E6": ["u", "u", "u", "u"],
+	  "E7": ["u", "u", "n", "u"],
+	  "F3": ["n", "u", "u", "u"],
+	  "F4": ["u", "u", "u", "u"],
+	  "F5": ["u", "u", "u", "u"],
+	  "F6": ["u", "u", "u", "u"],
+	  "F7": ["u", "u", "n", "u"],
+	  "G3": ["n", "u", "u", "u"],
+	  "G4": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "G6": ["u", "u", "u", "u"],
+	  "G7": ["u", "u", "n", "u"],
+	  "H3": ["n", "u", "u", "u"],
+	  "H4": ["u", "u", "u", "u"],
+	  "H5": ["u", "u", "u", "u"],
+	  "H6": ["u", "u", "u", "u"],
+	  "H7": ["u", "u", "n", "u"],
+	  "I3": ["n", "n", "u", "u"],
+	  "I4": ["u", "n", "u", "u"],
+	  "I5": ["u", "n", "u", "u"],
+	  "I6": ["u", "n", "u", "u"],
+	  "I7": ["u", "n", "n", "u"]
+	};
+
+	var largeCanvas = {
+	  "C2": ["n", "u", "u", "n"],
+	  "C3": ["u", "u", "u", "n"],
+	  "C4": ["u", "u", "u", "n"],
+	  "C5": ["u", "u", "u", "n"],
+	  "C6": ["u", "u", "u", "n"],
+	  "C7": ["u", "u", "u", "n"],
+	  "C8": ["u", "u", "n", "n"],
+	  "D2": ["n", "u", "u", "u"],
+	  "D3": ["u", "u", "u", "u"],
+	  "D4": ["u", "u", "u", "u"],
+	  "D5": ["u", "u", "u", "u"],
+	  "D6": ["u", "u", "u", "u"],
+	  "D7": ["u", "u", "u", "u"],
+	  "D8": ["u", "u", "n", "u"],
+	  "E2": ["n", "u", "u", "u"],
+	  "E3": ["u", "u", "u", "u"],
+	  "E4": ["u", "u", "u", "u"],
+	  "E5": ["u", "u", "u", "u"],
+	  "E6": ["u", "u", "u", "u"],
+	  "E7": ["u", "u", "u", "u"],
+	  "E8": ["u", "u", "n", "u"],
+	  "F2": ["n", "u", "u", "u"],
+	  "F3": ["u", "u", "u", "u"],
+	  "F4": ["u", "u", "u", "u"],
+	  "F5": ["u", "u", "u", "u"],
+	  "F6": ["u", "u", "u", "u"],
+	  "F7": ["u", "u", "u", "u"],
+	  "F8": ["u", "u", "n", "u"],
+	  "G2": ["n", "u", "u", "u"],
+	  "G3": ["u", "u", "u", "u"],
+	  "G4": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "G6": ["u", "u", "u", "u"],
+	  "G7": ["u", "u", "u", "u"],
+	  "G8": ["u", "u", "n", "u"],
+	  "H2": ["n", "u", "u", "u"],
+	  "H3": ["u", "u", "u", "u"],
+	  "H4": ["u", "u", "u", "u"],
+	  "H5": ["u", "u", "u", "u"],
+	  "H6": ["u", "u", "u", "u"],
+	  "H7": ["u", "u", "u", "u"],
+	  "H8": ["u", "u", "n", "u"],
+	  "I2": ["n", "u", "u", "u"],
+	  "I3": ["u", "u", "u", "u"],
+	  "I4": ["u", "u", "u", "u"],
+	  "I5": ["u", "u", "u", "u"],
+	  "I6": ["u", "u", "u", "u"],
+	  "I7": ["u", "u", "u", "u"],
+	  "I8": ["u", "u", "n", "u"],
+	  "J2": ["n", "n", "u", "u"],
+	  "J3": ["u", "n", "u", "u"],
+	  "J4": ["u", "n", "u", "u"],
+	  "J5": ["u", "n", "u", "u"],
+	  "J6": ["u", "n", "u", "u"],
+	  "J7": ["u", "n", "u", "u"],
+	  "J8": ["u", "n", "n", "u"]
+	};
+
+	PatternGenerator.prototype.canvasMatcher = function (levelNumber) {
+	  if (levelNumber <= 10) {
+	    return smallCanvas;
+	  } else if (levelNumber > 10 && levelNumber <= 15) {
+	    return mediumCanvas;
+	  } else {
+	    return largeCanvas;
+	  }
+	};
+
+	module.exports = PatternGenerator;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var Tadpole = function Tadpole(location, constraints, canvasLayout, patternGenerator) {
+	  this.patternGenerator = patternGenerator;
+	  this.location = location;
+	  this.top = constraints[0];
+	  this.right = constraints[1];
+	  this.bottom = constraints[2];
+	  this.left = constraints[3];
+	  this.canvasLayout = canvasLayout;
+	  this.neighborTop = findNeighbor(location, "top", canvasLayout);
+	  this.neighborRight = findNeighbor(location, "right", canvasLayout);
+	  this.neighborBottom = findNeighbor(location, "bottom", canvasLayout);
+	  this.neighborLeft = findNeighbor(location, "left", canvasLayout);
+	};
+
+	Tadpole.prototype.finalDetails = function () {
+	  var constraints = [this.top, this.right, this.bottom, this.left];
+	  this.setShapeAndOrientation(constraints);
+	  updateNeighbors(this);
+	  var location = this.location;
+	  var shape = this.shape;
+	  var orientation = this.orientation;
+	  return [location, shape, orientation];
+	};
+
+	Tadpole.prototype.shapeConstraints = function () {
+	  return [this.top, this.right, this.bottom, this.left];
+	};
+
+	var findNeighbor = function findNeighbor(location, neighborRelativeLocation, canvasLayout) {
+	  var currentCanvas = Object.keys(canvasLayout);
+	  var letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+	  var numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+	  var myLetter = location.charAt(0);
+	  var myNumber = location.charAt(1);
+	  var neighbors = {
+	    "top": myLetter + numbers[numbers.indexOf(myNumber) - 1],
+	    "right": letters[letters.indexOf(myLetter) + 1] + myNumber,
+	    "bottom": myLetter + numbers[numbers.indexOf(myNumber) + 1],
+	    "left": letters[letters.indexOf(myLetter) - 1] + myNumber
+	  };
+	  if (currentCanvas.indexOf(neighbors[neighborRelativeLocation]) > -1) {
+	    return neighbors[neighborRelativeLocation];
+	  }
+	};
+
+	var updateNeighbors = function updateNeighbors(self) {
+	  var topNeighborImpact = lookupImpact(self, self.shape, self.orientation, "top");
+	  var rightNeighborImpact = lookupImpact(self, self.shape, self.orientation, "right");
+	  var bottomNeighborImpact = lookupImpact(self, self.shape, self.orientation, "bottom");
+	  var leftNeighborImpact = lookupImpact(self, self.shape, self.orientation, "left");
+	  if (self.neighborTop) {
+	    self.patternGenerator.tadpoleHolder[self.neighborTop].bottom = topNeighborImpact;
+	  }
+	  if (self.neighborRight) {
+	    self.patternGenerator.tadpoleHolder[self.neighborRight].left = rightNeighborImpact;
+	  }
+	  if (self.neighborBottom) {
+	    self.patternGenerator.tadpoleHolder[self.neighborBottom].top = bottomNeighborImpact;
+	  }
+	  if (self.neighborLeft) {
+	    self.patternGenerator.tadpoleHolder[self.neighborLeft].right = leftNeighborImpact;
+	  }
+	};
+
+	var lookupImpact = function lookupImpact(self, shape, orientation, side) {
+	  var impacts = {
+	    "spoke": {
+	      "top": { "top": "y" },
+	      "right": { "right": "y" },
+	      "bottom": { "bottom": "y" },
+	      "left": { "left": "y" }
+	    },
+	    "arc": {
+	      "top": { "bottom": "y", "left": "y" },
+	      "right": { "top": "y", "left": "y" },
+	      "bottom": { "top": "y", "right": "y" },
+	      "left": { "right": "y", "bottom": "y" }
+	    },
+	    "line": {
+	      "horizontal": { "right": "y", "left": "y" },
+	      "vertical": { "top": "y", "bottom": "y" }
+	    },
+	    "doubleArc": {
+	      "top": { "top": "y", "right": "y", "left": "y" },
+	      "right": { "top": "y", "right": "y", "bottom": "y" },
+	      "bottom": { "right": "y", "bottom": "y", "left": "y" },
+	      "left": { "top": "y", "bottom": "y", "left": "y" }
+	    },
+	    "quadArc": {
+	      "all": { "top": "y", "right": "y", "bottom": "y", "left": "y" }
+	    }
+	  };
+	  if (impacts[shape][orientation][side]) {
+	    return impacts[shape][orientation][side];
+	  } else {
+	    return "n";
+	  }
+	};
+
+	Tadpole.prototype.setShapeAndOrientation = function (constraints) {
+	  var topMatches = tileOptions["top"][constraints[0]];
+	  var rightMatches = tileOptions["right"][constraints[1]];
+	  var bottomMatches = tileOptions["bottom"][constraints[2]];
+	  var leftMatches = tileOptions["left"][constraints[3]];
+	  var allOptionsWithDuplicates = topMatches.concat(rightMatches).concat(bottomMatches).concat(leftMatches);
+
+	  var objectsMeetingConditions = meetsAllConditions(allOptionsWithDuplicates);
+	  var shapeAndOrientation = objectsMeetingConditions.sample();
+
+	  if (shapeAndOrientation) {
+	    this.shape = shapeAndOrientation.split(",")[0];
+	    this.orientation = shapeAndOrientation.split(",")[1];
+	  }
+	};
+
+	var meetsAllConditions = function meetsAllConditions(allOptionsWithDuplicates) {
+	  var occurrences = {};
+	  var matches = [];
+	  for (var i = 0; i < allOptionsWithDuplicates.length; i++) {
+	    if (occurrences[allOptionsWithDuplicates[i]] != null) {
+	      occurrences[allOptionsWithDuplicates[i]] = occurrences[allOptionsWithDuplicates[i]] + 1;
+	    } else {
+	      occurrences[allOptionsWithDuplicates[i]] = "1";
+	    }
+	  }
+
+	  for (var key in occurrences) {
+	    if (occurrences[key] === "1111") {
+	      matches.push(key);
+	    }
+	  }
+
+	  return matches;
+	};
+
+	var allOptions = [["spoke", "top"], ["spoke", "right"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "right"], ["arc", "bottom"], ["arc", "left"], ["line", "horizontal"], ["line", "vertical"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]];
+
+	var tileOptions = {
+	  "top": { "y": [["spoke", "top"], ["arc", "right"], ["arc", "bottom"], ["line", "vertical"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "right"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "bottom"]], "u": allOptions },
+	  "right": { "y": [["spoke", "right"], ["arc", "bottom"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "vertical"], ["doubleArc", "left"]], "u": allOptions },
+	  "bottom": { "y": [["spoke", "bottom"], ["arc", "top"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "left"], ["arc", "right"], ["arc", "bottom"], ["line", "horizontal"], ["doubleArc", "top"]], "u": allOptions },
+	  "left": { "y": [["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "bottom"], ["arc", "bottom"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"]], "u": allOptions }
+	};
+
+	module.exports = Tadpole;
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
