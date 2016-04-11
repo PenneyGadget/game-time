@@ -76,31 +76,26 @@
 
 	var $ = __webpack_require__(2);
 	var Renderer = __webpack_require__(3);
-	var Spoke = __webpack_require__(5);
-	var Arc = __webpack_require__(6);
-	var Line = __webpack_require__(7);
-	var DoubleArc = __webpack_require__(8);
-	var QuadArc = __webpack_require__(9);
+	var Spoke = __webpack_require__(6);
+	var Arc = __webpack_require__(7);
+	var Line = __webpack_require__(8);
+	var DoubleArc = __webpack_require__(9);
+	var QuadArc = __webpack_require__(10);
 	var Grid = __webpack_require__(4);
-	var Solutions = __webpack_require__(10);
-	var Effects = __webpack_require__(13);
+	var Solutions = __webpack_require__(11);
+	var Effects = __webpack_require__(15);
 	var audio = new Audio('audio/Tenpuu.mp3');
 
 	var Game = function Game(context, canvas) {
 	  this.context = context;
 	  this.canvas = canvas;
 	  this.width = canvas.width;
-	  this.height = canvas.height;
 	  this.context.lineWidth = 4;
 	  this.objectIndex = {};
-	  var renderer = new Renderer(this);
-	  this.renderer = renderer;
-	  var grid = new Grid();
-	  this.grid = grid;
-	  var solutions = new Solutions(this);
-	  this.solutions = solutions;
-	  var effects = new Effects();
-	  this.effects = effects;
+	  this.renderer = new Renderer(this);
+	  this.grid = new Grid();
+	  this.solutions = new Solutions(this);
+	  this.effects = new Effects();
 	  this.counter = 0;
 	};
 
@@ -128,29 +123,20 @@
 	  }
 	};
 
+	var shapes = {
+	  spoke: Spoke,
+	  line: Line,
+	  arc: Arc,
+	  doubleArc: DoubleArc,
+	  quadArc: QuadArc
+	};
+
 	var createTileObjects = function createTileObjects(self, levelArrangement) {
 	  for (var i = 0; i < levelArrangement.length; i++) {
 	    var _location = levelArrangement[i][0];
 	    var orientation = levelArrangement[i][2] || "all";
 	    var shapeType = levelArrangement[i][1];
-
-	    switch (shapeType) {
-	      case "spoke":
-	        self.objectIndex[_location] = new Spoke(_location, orientation);
-	        break;
-	      case "arc":
-	        self.objectIndex[_location] = new Arc(_location, orientation);
-	        break;
-	      case "line":
-	        self.objectIndex[_location] = new Line(_location, orientation);
-	        break;
-	      case "doubleArc":
-	        self.objectIndex[_location] = new DoubleArc(_location, orientation);
-	        break;
-	      case "quadArc":
-	        self.objectIndex[_location] = new QuadArc(_location, orientation);
-	        break;
-	    }
+	    self.objectIndex[_location] = new shapes[shapeType](_location, orientation);
 	  }
 	};
 
@@ -10109,8 +10095,7 @@
 	  this.spokeLineCoordinates = spokeLineCoordinates;
 	  this.lineCoordinates = lineCoordinates;
 	  this.doubleArcCoordinates = doubleArcCoordinates;
-	  var grid = new Grid();
-	  this.grid = grid;
+	  this.grid = new Grid();
 	};
 
 	Renderer.prototype.renderTile = function (shape, location, orientation) {
@@ -10144,7 +10129,7 @@
 	  this.context.clearRect(startX, startY, 40, 40);
 	  this.context.strokeStyle = "#BFAF80";
 	  this.context.beginPath();
-	  this.context.arc(startX + 20, startY + 20, 10, Math.PI * 0.0, Math.PI * 2.0, false);
+	  this.context.arc(startX + 20, startY + 20, 10, 0, Math.PI * 2.0, false);
 	  this.context.stroke();
 
 	  this.context.strokeStyle = "#BFAF80";
@@ -10213,24 +10198,24 @@
 	  this.context.clearRect(startX, startY, 40, 40);
 	  this.context.strokeStyle = "#BFAF80";
 	  this.context.beginPath();
-	  this.context.arc(startX + 0, startY + 40, 20, Math.PI * 1.5, Math.PI * 0.0, false);
+	  this.context.arc(startX, startY, 20, 0, Math.PI * 0.5, false);
+	  this.context.stroke();
+	  this.context.beginPath();
+	  this.context.arc(startX + 40, startY, 20, Math.PI * 0.5, Math.PI, false);
 	  this.context.stroke();
 	  this.context.beginPath();
 	  this.context.arc(startX + 40, startY + 40, 20, Math.PI, Math.PI * 1.5, false);
 	  this.context.stroke();
 	  this.context.beginPath();
-	  this.context.arc(startX + 0, startY + 0, 20, Math.PI * 1.5, Math.PI * 1.0, false);
-	  this.context.stroke();
-	  this.context.beginPath();
-	  this.context.arc(startX + 40, startY + 0, 20, Math.PI * 0.5, Math.PI * 1.0, false);
+	  this.context.arc(startX, startY + 40, 20, Math.PI * 1.5, 0, false);
 	  this.context.stroke();
 	};
 
 	var doubleArcCoordinates = {
-	  "top": [[40, 0, 0.5, 1.0], [0, 0, 0.0, 0.5]],
+	  "top": [[40, 0, 0.5, 1.0], [0, 0, 0, 0.5]],
 	  "right": [[40, 40, 1.0, 1.5], [40, 0, 0.5, 1.0]],
-	  "bottom": [[0, 40, 1.5, 0.0], [40, 40, 1.0, 1.5]],
-	  "left": [[0, 0, 0.0, 0.5], [0, 40, 1.5, 0.0]]
+	  "bottom": [[0, 40, 1.5, 0], [40, 40, 1.0, 1.5]],
+	  "left": [[0, 0, 0, 0.5], [0, 40, 1.5, 0]]
 	};
 
 	var spokeLineCoordinates = {
@@ -10246,33 +10231,36 @@
 	};
 
 	Renderer.prototype.findStartX = function (location) {
-	  return this.grid.locationsIndex[location].x;
+	  return this.grid.tiles.tileIndex([location]).x;
 	};
 
 	Renderer.prototype.findStartY = function (location) {
-	  return this.grid.locationsIndex[location].y;
+	  return this.grid.tiles.tileIndex([location]).y;
 	};
 
 	module.exports = Renderer;
 
 /***/ },
 /* 4 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
+	var Tiles = __webpack_require__(5);
+
 	var Grid = function Grid() {
-	  this.locationsIndex = locationsIndex;
+	  this.tiles = new Tiles();
 	};
 
 	Grid.prototype.findLocation = function (clickedX, clickedY) {
 	  // verifies that user clicked on a live tile
+	  var self = this;
 	  if (clickedX < xStartPoints[xStartPoints.length - 1] + 40 && clickedX > xStartPoints[0] && clickedY < yStartPoints[yStartPoints.length - 1] + 40 && clickedY > yStartPoints[0]) {
-	    return getLocation(clickedX, clickedY);
+	    return getLocation(self, clickedX, clickedY);
 	  }
 	};
 
-	var getLocation = function getLocation(clickedX, clickedY) {
+	var getLocation = function getLocation(self, clickedX, clickedY) {
 	  // returns tile number of clicked piece
 	  var closestXOrigin = function closestXOrigin() {
 	    var xRounded = 40 * Math.round(clickedX / 40) - 20;
@@ -10285,13 +10273,23 @@
 	    var originY = yRounded > clickedY ? yRounded - 40 : yRounded;
 	    return originY;
 	  };
-	  return tileNumber(closestXOrigin(), closestYOrigin());
+	  return self.tiles.tileNumber(closestXOrigin(), closestYOrigin());
 	};
 
 	var xStartPoints = [60, 100, 140, 180, 220, 260, 300, 340, 380, 420, 460, 500];
 	var yStartPoints = [20, 60, 100, 140, 180, 220, 260, 300, 340];
 
-	var tileNumber = function tileNumber(x, y) {
+	module.exports = Grid;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var Tiles = function Tiles() {};
+
+	Tiles.prototype.tileNumber = function (x, y) {
 	  var tilesByCoordinate = {
 	    60: { 20: 'A1', 60: 'A2', 100: 'A3', 140: 'A4', 180: 'A5', 220: 'A6', 260: 'A7', 300: 'A8', 340: 'A9' },
 	    100: { 20: 'B1', 60: 'B2', 100: 'B3', 140: 'B4', 180: 'B5', 220: 'B6', 260: 'B7', 300: 'B8', 340: 'B9' },
@@ -10309,121 +10307,124 @@
 	  return tilesByCoordinate[x][y];
 	};
 
-	var locationsIndex = {
-	  'A1': { 'x': 60, 'y': 20 },
-	  'A2': { 'x': 60, 'y': 60 },
-	  'A3': { 'x': 60, 'y': 100 },
-	  'A4': { 'x': 60, 'y': 140 },
-	  'A5': { 'x': 60, 'y': 180 },
-	  'A6': { 'x': 60, 'y': 220 },
-	  'A7': { 'x': 60, 'y': 260 },
-	  'A8': { 'x': 60, 'y': 300 },
-	  'A9': { 'x': 60, 'y': 340 },
-	  'B1': { 'x': 100, 'y': 20 },
-	  'B2': { 'x': 100, 'y': 60 },
-	  'B3': { 'x': 100, 'y': 100 },
-	  'B4': { 'x': 100, 'y': 140 },
-	  'B5': { 'x': 100, 'y': 180 },
-	  'B6': { 'x': 100, 'y': 220 },
-	  'B7': { 'x': 100, 'y': 260 },
-	  'B8': { 'x': 100, 'y': 300 },
-	  'B9': { 'x': 100, 'y': 340 },
-	  'C1': { 'x': 140, 'y': 20 },
-	  'C2': { 'x': 140, 'y': 60 },
-	  'C3': { 'x': 140, 'y': 100 },
-	  'C4': { 'x': 140, 'y': 140 },
-	  'C5': { 'x': 140, 'y': 180 },
-	  'C6': { 'x': 140, 'y': 220 },
-	  'C7': { 'x': 140, 'y': 260 },
-	  'C8': { 'x': 140, 'y': 300 },
-	  'C9': { 'x': 140, 'y': 340 },
-	  'D1': { 'x': 180, 'y': 20 },
-	  'D2': { 'x': 180, 'y': 60 },
-	  'D3': { 'x': 180, 'y': 100 },
-	  'D4': { 'x': 180, 'y': 140 },
-	  'D5': { 'x': 180, 'y': 180 },
-	  'D6': { 'x': 180, 'y': 220 },
-	  'D7': { 'x': 180, 'y': 260 },
-	  'D8': { 'x': 180, 'y': 300 },
-	  'D9': { 'x': 180, 'y': 340 },
-	  'E1': { 'x': 220, 'y': 20 },
-	  'E2': { 'x': 220, 'y': 60 },
-	  'E3': { 'x': 220, 'y': 100 },
-	  'E4': { 'x': 220, 'y': 140 },
-	  'E5': { 'x': 220, 'y': 180 },
-	  'E6': { 'x': 220, 'y': 220 },
-	  'E7': { 'x': 220, 'y': 260 },
-	  'E8': { 'x': 220, 'y': 300 },
-	  'E9': { 'x': 220, 'y': 340 },
-	  'F1': { 'x': 260, 'y': 20 },
-	  'F2': { 'x': 260, 'y': 60 },
-	  'F3': { 'x': 260, 'y': 100 },
-	  'F4': { 'x': 260, 'y': 140 },
-	  'F5': { 'x': 260, 'y': 180 },
-	  'F6': { 'x': 260, 'y': 220 },
-	  'F7': { 'x': 260, 'y': 260 },
-	  'F8': { 'x': 260, 'y': 300 },
-	  'F9': { 'x': 260, 'y': 340 },
-	  'G1': { 'x': 300, 'y': 20 },
-	  'G2': { 'x': 300, 'y': 60 },
-	  'G3': { 'x': 300, 'y': 100 },
-	  'G4': { 'x': 300, 'y': 140 },
-	  'G5': { 'x': 300, 'y': 180 },
-	  'G6': { 'x': 300, 'y': 220 },
-	  'G7': { 'x': 300, 'y': 260 },
-	  'G8': { 'x': 300, 'y': 300 },
-	  'G9': { 'x': 300, 'y': 340 },
-	  'H1': { 'x': 340, 'y': 20 },
-	  'H2': { 'x': 340, 'y': 60 },
-	  'H3': { 'x': 340, 'y': 100 },
-	  'H4': { 'x': 340, 'y': 140 },
-	  'H5': { 'x': 340, 'y': 180 },
-	  'H6': { 'x': 340, 'y': 220 },
-	  'H7': { 'x': 340, 'y': 260 },
-	  'H8': { 'x': 340, 'y': 300 },
-	  'H9': { 'x': 340, 'y': 340 },
-	  'I1': { 'x': 380, 'y': 20 },
-	  'I2': { 'x': 380, 'y': 60 },
-	  'I3': { 'x': 380, 'y': 100 },
-	  'I4': { 'x': 380, 'y': 140 },
-	  'I5': { 'x': 380, 'y': 180 },
-	  'I6': { 'x': 380, 'y': 220 },
-	  'I7': { 'x': 380, 'y': 260 },
-	  'I8': { 'x': 380, 'y': 300 },
-	  'I9': { 'x': 380, 'y': 340 },
-	  'J1': { 'x': 420, 'y': 20 },
-	  'J2': { 'x': 420, 'y': 60 },
-	  'J3': { 'x': 420, 'y': 100 },
-	  'J4': { 'x': 420, 'y': 140 },
-	  'J5': { 'x': 420, 'y': 180 },
-	  'J6': { 'x': 420, 'y': 220 },
-	  'J7': { 'x': 420, 'y': 260 },
-	  'J8': { 'x': 420, 'y': 300 },
-	  'J9': { 'x': 420, 'y': 340 },
-	  'K1': { 'x': 460, 'y': 20 },
-	  'K2': { 'x': 460, 'y': 60 },
-	  'K3': { 'x': 460, 'y': 100 },
-	  'K4': { 'x': 460, 'y': 140 },
-	  'K5': { 'x': 460, 'y': 180 },
-	  'K6': { 'x': 460, 'y': 220 },
-	  'K7': { 'x': 460, 'y': 260 },
-	  'K8': { 'x': 460, 'y': 300 },
-	  'K9': { 'x': 460, 'y': 340 },
-	  'L1': { 'x': 500, 'y': 20 },
-	  'L2': { 'x': 500, 'y': 60 },
-	  'L3': { 'x': 500, 'y': 100 },
-	  'L4': { 'x': 500, 'y': 140 },
-	  'L5': { 'x': 500, 'y': 180 },
-	  'L6': { 'x': 500, 'y': 220 },
-	  'L7': { 'x': 500, 'y': 260 },
-	  'L8': { 'x': 500, 'y': 300 },
-	  'L9': { 'x': 500, 'y': 340 }
+	Tiles.prototype.tileIndex = function (index) {
+	  var locationsIndex = {
+	    'A1': { 'x': 60, 'y': 20 },
+	    'A2': { 'x': 60, 'y': 60 },
+	    'A3': { 'x': 60, 'y': 100 },
+	    'A4': { 'x': 60, 'y': 140 },
+	    'A5': { 'x': 60, 'y': 180 },
+	    'A6': { 'x': 60, 'y': 220 },
+	    'A7': { 'x': 60, 'y': 260 },
+	    'A8': { 'x': 60, 'y': 300 },
+	    'A9': { 'x': 60, 'y': 340 },
+	    'B1': { 'x': 100, 'y': 20 },
+	    'B2': { 'x': 100, 'y': 60 },
+	    'B3': { 'x': 100, 'y': 100 },
+	    'B4': { 'x': 100, 'y': 140 },
+	    'B5': { 'x': 100, 'y': 180 },
+	    'B6': { 'x': 100, 'y': 220 },
+	    'B7': { 'x': 100, 'y': 260 },
+	    'B8': { 'x': 100, 'y': 300 },
+	    'B9': { 'x': 100, 'y': 340 },
+	    'C1': { 'x': 140, 'y': 20 },
+	    'C2': { 'x': 140, 'y': 60 },
+	    'C3': { 'x': 140, 'y': 100 },
+	    'C4': { 'x': 140, 'y': 140 },
+	    'C5': { 'x': 140, 'y': 180 },
+	    'C6': { 'x': 140, 'y': 220 },
+	    'C7': { 'x': 140, 'y': 260 },
+	    'C8': { 'x': 140, 'y': 300 },
+	    'C9': { 'x': 140, 'y': 340 },
+	    'D1': { 'x': 180, 'y': 20 },
+	    'D2': { 'x': 180, 'y': 60 },
+	    'D3': { 'x': 180, 'y': 100 },
+	    'D4': { 'x': 180, 'y': 140 },
+	    'D5': { 'x': 180, 'y': 180 },
+	    'D6': { 'x': 180, 'y': 220 },
+	    'D7': { 'x': 180, 'y': 260 },
+	    'D8': { 'x': 180, 'y': 300 },
+	    'D9': { 'x': 180, 'y': 340 },
+	    'E1': { 'x': 220, 'y': 20 },
+	    'E2': { 'x': 220, 'y': 60 },
+	    'E3': { 'x': 220, 'y': 100 },
+	    'E4': { 'x': 220, 'y': 140 },
+	    'E5': { 'x': 220, 'y': 180 },
+	    'E6': { 'x': 220, 'y': 220 },
+	    'E7': { 'x': 220, 'y': 260 },
+	    'E8': { 'x': 220, 'y': 300 },
+	    'E9': { 'x': 220, 'y': 340 },
+	    'F1': { 'x': 260, 'y': 20 },
+	    'F2': { 'x': 260, 'y': 60 },
+	    'F3': { 'x': 260, 'y': 100 },
+	    'F4': { 'x': 260, 'y': 140 },
+	    'F5': { 'x': 260, 'y': 180 },
+	    'F6': { 'x': 260, 'y': 220 },
+	    'F7': { 'x': 260, 'y': 260 },
+	    'F8': { 'x': 260, 'y': 300 },
+	    'F9': { 'x': 260, 'y': 340 },
+	    'G1': { 'x': 300, 'y': 20 },
+	    'G2': { 'x': 300, 'y': 60 },
+	    'G3': { 'x': 300, 'y': 100 },
+	    'G4': { 'x': 300, 'y': 140 },
+	    'G5': { 'x': 300, 'y': 180 },
+	    'G6': { 'x': 300, 'y': 220 },
+	    'G7': { 'x': 300, 'y': 260 },
+	    'G8': { 'x': 300, 'y': 300 },
+	    'G9': { 'x': 300, 'y': 340 },
+	    'H1': { 'x': 340, 'y': 20 },
+	    'H2': { 'x': 340, 'y': 60 },
+	    'H3': { 'x': 340, 'y': 100 },
+	    'H4': { 'x': 340, 'y': 140 },
+	    'H5': { 'x': 340, 'y': 180 },
+	    'H6': { 'x': 340, 'y': 220 },
+	    'H7': { 'x': 340, 'y': 260 },
+	    'H8': { 'x': 340, 'y': 300 },
+	    'H9': { 'x': 340, 'y': 340 },
+	    'I1': { 'x': 380, 'y': 20 },
+	    'I2': { 'x': 380, 'y': 60 },
+	    'I3': { 'x': 380, 'y': 100 },
+	    'I4': { 'x': 380, 'y': 140 },
+	    'I5': { 'x': 380, 'y': 180 },
+	    'I6': { 'x': 380, 'y': 220 },
+	    'I7': { 'x': 380, 'y': 260 },
+	    'I8': { 'x': 380, 'y': 300 },
+	    'I9': { 'x': 380, 'y': 340 },
+	    'J1': { 'x': 420, 'y': 20 },
+	    'J2': { 'x': 420, 'y': 60 },
+	    'J3': { 'x': 420, 'y': 100 },
+	    'J4': { 'x': 420, 'y': 140 },
+	    'J5': { 'x': 420, 'y': 180 },
+	    'J6': { 'x': 420, 'y': 220 },
+	    'J7': { 'x': 420, 'y': 260 },
+	    'J8': { 'x': 420, 'y': 300 },
+	    'J9': { 'x': 420, 'y': 340 },
+	    'K1': { 'x': 460, 'y': 20 },
+	    'K2': { 'x': 460, 'y': 60 },
+	    'K3': { 'x': 460, 'y': 100 },
+	    'K4': { 'x': 460, 'y': 140 },
+	    'K5': { 'x': 460, 'y': 180 },
+	    'K6': { 'x': 460, 'y': 220 },
+	    'K7': { 'x': 460, 'y': 260 },
+	    'K8': { 'x': 460, 'y': 300 },
+	    'K9': { 'x': 460, 'y': 340 },
+	    'L1': { 'x': 500, 'y': 20 },
+	    'L2': { 'x': 500, 'y': 60 },
+	    'L3': { 'x': 500, 'y': 100 },
+	    'L4': { 'x': 500, 'y': 140 },
+	    'L5': { 'x': 500, 'y': 180 },
+	    'L6': { 'x': 500, 'y': 220 },
+	    'L7': { 'x': 500, 'y': 260 },
+	    'L8': { 'x': 500, 'y': 300 },
+	    'L9': { 'x': 500, 'y': 340 }
+	  };
+	  return locationsIndex[index];
 	};
 
-	module.exports = Grid;
+	module.exports = Tiles;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10459,7 +10460,7 @@
 	module.exports = Spoke;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	// ARC ORIENTATIONS:
@@ -10501,7 +10502,7 @@
 	module.exports = Arc;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10537,7 +10538,7 @@
 	module.exports = Line;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10573,7 +10574,7 @@
 	module.exports = doubleArc;
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10588,17 +10589,16 @@
 	module.exports = quadArc;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var PatternGenerator = __webpack_require__(11);
+	var PatternGenerator = __webpack_require__(12);
 
 	var Solutions = function Solutions(game) {
 	  this.game = game;
-	  var patternGenerator = new PatternGenerator();
-	  this.patternGenerator = patternGenerator;
+	  this.patternGenerator = new PatternGenerator();
 	};
 
 	Solutions.prototype.setArrangement = function (levelNumber) {
@@ -10645,12 +10645,13 @@
 	module.exports = Solutions;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
-	var Tadpole = __webpack_require__(12);
+	var Tadpole = __webpack_require__(13);
+	var CanvasParameters = __webpack_require__(14);
 
 	var PatternGenerator = function PatternGenerator(game) {
 	  this.game = game;
@@ -10685,127 +10686,20 @@
 	  return arrayOfTileDetails;
 	};
 
-	var smallCanvas = {
-	  "E4": ["n", "u", "u", "n"],
-	  "F4": ["n", "u", "u", "u"],
-	  "G4": ["n", "u", "u", "u"],
-	  "H4": ["n", "n", "u", "u"],
-	  "E5": ["u", "u", "u", "n"],
-	  "F5": ["u", "u", "u", "u"],
-	  "G5": ["u", "u", "u", "u"],
-	  "H5": ["u", "n", "u", "u"],
-	  "E6": ["u", "u", "n", "n"],
-	  "F6": ["u", "u", "n", "u"],
-	  "G6": ["u", "u", "n", "u"],
-	  "H6": ["u", "n", "n", "u"]
-	};
-
-	var mediumCanvas = {
-	  "D3": ["n", "u", "u", "n"],
-	  "D4": ["u", "u", "u", "n"],
-	  "D5": ["u", "u", "u", "n"],
-	  "D6": ["u", "u", "u", "n"],
-	  "D7": ["u", "u", "n", "n"],
-	  "E3": ["n", "u", "u", "u"],
-	  "E4": ["u", "u", "u", "u"],
-	  "E5": ["u", "u", "u", "u"],
-	  "E6": ["u", "u", "u", "u"],
-	  "E7": ["u", "u", "n", "u"],
-	  "F3": ["n", "u", "u", "u"],
-	  "F4": ["u", "u", "u", "u"],
-	  "F5": ["u", "u", "u", "u"],
-	  "F6": ["u", "u", "u", "u"],
-	  "F7": ["u", "u", "n", "u"],
-	  "G3": ["n", "u", "u", "u"],
-	  "G4": ["u", "u", "u", "u"],
-	  "G5": ["u", "u", "u", "u"],
-	  "G6": ["u", "u", "u", "u"],
-	  "G7": ["u", "u", "n", "u"],
-	  "H3": ["n", "u", "u", "u"],
-	  "H4": ["u", "u", "u", "u"],
-	  "H5": ["u", "u", "u", "u"],
-	  "H6": ["u", "u", "u", "u"],
-	  "H7": ["u", "u", "n", "u"],
-	  "I3": ["n", "n", "u", "u"],
-	  "I4": ["u", "n", "u", "u"],
-	  "I5": ["u", "n", "u", "u"],
-	  "I6": ["u", "n", "u", "u"],
-	  "I7": ["u", "n", "n", "u"]
-	};
-
-	var largeCanvas = {
-	  "C2": ["n", "u", "u", "n"],
-	  "C3": ["u", "u", "u", "n"],
-	  "C4": ["u", "u", "u", "n"],
-	  "C5": ["u", "u", "u", "n"],
-	  "C6": ["u", "u", "u", "n"],
-	  "C7": ["u", "u", "u", "n"],
-	  "C8": ["u", "u", "n", "n"],
-	  "D2": ["n", "u", "u", "u"],
-	  "D3": ["u", "u", "u", "u"],
-	  "D4": ["u", "u", "u", "u"],
-	  "D5": ["u", "u", "u", "u"],
-	  "D6": ["u", "u", "u", "u"],
-	  "D7": ["u", "u", "u", "u"],
-	  "D8": ["u", "u", "n", "u"],
-	  "E2": ["n", "u", "u", "u"],
-	  "E3": ["u", "u", "u", "u"],
-	  "E4": ["u", "u", "u", "u"],
-	  "E5": ["u", "u", "u", "u"],
-	  "E6": ["u", "u", "u", "u"],
-	  "E7": ["u", "u", "u", "u"],
-	  "E8": ["u", "u", "n", "u"],
-	  "F2": ["n", "u", "u", "u"],
-	  "F3": ["u", "u", "u", "u"],
-	  "F4": ["u", "u", "u", "u"],
-	  "F5": ["u", "u", "u", "u"],
-	  "F6": ["u", "u", "u", "u"],
-	  "F7": ["u", "u", "u", "u"],
-	  "F8": ["u", "u", "n", "u"],
-	  "G2": ["n", "u", "u", "u"],
-	  "G3": ["u", "u", "u", "u"],
-	  "G4": ["u", "u", "u", "u"],
-	  "G5": ["u", "u", "u", "u"],
-	  "G6": ["u", "u", "u", "u"],
-	  "G7": ["u", "u", "u", "u"],
-	  "G8": ["u", "u", "n", "u"],
-	  "H2": ["n", "u", "u", "u"],
-	  "H3": ["u", "u", "u", "u"],
-	  "H4": ["u", "u", "u", "u"],
-	  "H5": ["u", "u", "u", "u"],
-	  "H6": ["u", "u", "u", "u"],
-	  "H7": ["u", "u", "u", "u"],
-	  "H8": ["u", "u", "n", "u"],
-	  "I2": ["n", "u", "u", "u"],
-	  "I3": ["u", "u", "u", "u"],
-	  "I4": ["u", "u", "u", "u"],
-	  "I5": ["u", "u", "u", "u"],
-	  "I6": ["u", "u", "u", "u"],
-	  "I7": ["u", "u", "u", "u"],
-	  "I8": ["u", "u", "n", "u"],
-	  "J2": ["n", "n", "u", "u"],
-	  "J3": ["u", "n", "u", "u"],
-	  "J4": ["u", "n", "u", "u"],
-	  "J5": ["u", "n", "u", "u"],
-	  "J6": ["u", "n", "u", "u"],
-	  "J7": ["u", "n", "u", "u"],
-	  "J8": ["u", "n", "n", "u"]
-	};
-
 	PatternGenerator.prototype.canvasMatcher = function (levelNumber) {
 	  if (levelNumber <= 10) {
-	    return smallCanvas;
+	    return new CanvasParameters("small");
 	  } else if (levelNumber > 10 && levelNumber <= 15) {
-	    return mediumCanvas;
+	    return new CanvasParameters("medium");
 	  } else {
-	    return largeCanvas;
+	    return new CanvasParameters("large");
 	  }
 	};
 
 	module.exports = PatternGenerator;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -10948,21 +10842,157 @@
 	var allOptions = [["spoke", "top"], ["spoke", "right"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "right"], ["arc", "bottom"], ["arc", "left"], ["line", "horizontal"], ["line", "vertical"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]];
 
 	var tileOptions = {
-	  "top": { "y": [["spoke", "top"], ["arc", "right"], ["arc", "bottom"], ["line", "vertical"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "right"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "bottom"]], "u": allOptions },
-	  "right": { "y": [["spoke", "right"], ["arc", "bottom"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "vertical"], ["doubleArc", "left"]], "u": allOptions },
-	  "bottom": { "y": [["spoke", "bottom"], ["arc", "top"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "left"], ["arc", "right"], ["arc", "bottom"], ["line", "horizontal"], ["doubleArc", "top"]], "u": allOptions },
-	  "left": { "y": [["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]], "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "bottom"], ["arc", "bottom"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"]], "u": allOptions }
+	  "top": { "y": [["spoke", "top"], ["arc", "right"], ["arc", "bottom"], ["line", "vertical"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "left"], ["quadArc", "all"]],
+	    "n": [["spoke", "right"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "bottom"]],
+	    "u": allOptions },
+	  "right": { "y": [["spoke", "right"], ["arc", "bottom"], ["arc", "left"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["quadArc", "all"]],
+	    "n": [["spoke", "top"], ["spoke", "bottom"], ["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "vertical"], ["doubleArc", "left"]],
+	    "u": allOptions },
+	  "bottom": { "y": [["spoke", "bottom"], ["arc", "top"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]],
+	    "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "left"], ["arc", "right"], ["arc", "bottom"], ["line", "horizontal"], ["doubleArc", "top"]],
+	    "u": allOptions },
+	  "left": { "y": [["spoke", "left"], ["arc", "top"], ["arc", "right"], ["line", "horizontal"], ["doubleArc", "top"], ["doubleArc", "bottom"], ["doubleArc", "left"], ["quadArc", "all"]],
+	    "n": [["spoke", "top"], ["spoke", "right"], ["spoke", "bottom"], ["arc", "bottom"], ["arc", "left"], ["line", "vertical"], ["doubleArc", "right"]],
+	    "u": allOptions }
 	};
 
 	module.exports = Tadpole;
 
 /***/ },
-/* 13 */
+/* 14 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var canvasParameters = function canvasParameters(size) {
+	  if (size === "small") {
+	    return smallCanvas;
+	  }
+	  if (size === "medium") {
+	    return mediumCanvas;
+	  }
+	  if (size === "large") {
+	    return largeCanvas;
+	  }
+	};
+
+	var smallCanvas = {
+	  "E4": ["n", "u", "u", "n"],
+	  "F4": ["n", "u", "u", "u"],
+	  "G4": ["n", "u", "u", "u"],
+	  "H4": ["n", "n", "u", "u"],
+	  "E5": ["u", "u", "u", "n"],
+	  "F5": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "H5": ["u", "n", "u", "u"],
+	  "E6": ["u", "u", "n", "n"],
+	  "F6": ["u", "u", "n", "u"],
+	  "G6": ["u", "u", "n", "u"],
+	  "H6": ["u", "n", "n", "u"]
+	};
+
+	var mediumCanvas = {
+	  "D3": ["n", "u", "u", "n"],
+	  "D4": ["u", "u", "u", "n"],
+	  "D5": ["u", "u", "u", "n"],
+	  "D6": ["u", "u", "u", "n"],
+	  "D7": ["u", "u", "n", "n"],
+	  "E3": ["n", "u", "u", "u"],
+	  "E4": ["u", "u", "u", "u"],
+	  "E5": ["u", "u", "u", "u"],
+	  "E6": ["u", "u", "u", "u"],
+	  "E7": ["u", "u", "n", "u"],
+	  "F3": ["n", "u", "u", "u"],
+	  "F4": ["u", "u", "u", "u"],
+	  "F5": ["u", "u", "u", "u"],
+	  "F6": ["u", "u", "u", "u"],
+	  "F7": ["u", "u", "n", "u"],
+	  "G3": ["n", "u", "u", "u"],
+	  "G4": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "G6": ["u", "u", "u", "u"],
+	  "G7": ["u", "u", "n", "u"],
+	  "H3": ["n", "u", "u", "u"],
+	  "H4": ["u", "u", "u", "u"],
+	  "H5": ["u", "u", "u", "u"],
+	  "H6": ["u", "u", "u", "u"],
+	  "H7": ["u", "u", "n", "u"],
+	  "I3": ["n", "n", "u", "u"],
+	  "I4": ["u", "n", "u", "u"],
+	  "I5": ["u", "n", "u", "u"],
+	  "I6": ["u", "n", "u", "u"],
+	  "I7": ["u", "n", "n", "u"]
+	};
+
+	var largeCanvas = {
+	  "C2": ["n", "u", "u", "n"],
+	  "C3": ["u", "u", "u", "n"],
+	  "C4": ["u", "u", "u", "n"],
+	  "C5": ["u", "u", "u", "n"],
+	  "C6": ["u", "u", "u", "n"],
+	  "C7": ["u", "u", "u", "n"],
+	  "C8": ["u", "u", "n", "n"],
+	  "D2": ["n", "u", "u", "u"],
+	  "D3": ["u", "u", "u", "u"],
+	  "D4": ["u", "u", "u", "u"],
+	  "D5": ["u", "u", "u", "u"],
+	  "D6": ["u", "u", "u", "u"],
+	  "D7": ["u", "u", "u", "u"],
+	  "D8": ["u", "u", "n", "u"],
+	  "E2": ["n", "u", "u", "u"],
+	  "E3": ["u", "u", "u", "u"],
+	  "E4": ["u", "u", "u", "u"],
+	  "E5": ["u", "u", "u", "u"],
+	  "E6": ["u", "u", "u", "u"],
+	  "E7": ["u", "u", "u", "u"],
+	  "E8": ["u", "u", "n", "u"],
+	  "F2": ["n", "u", "u", "u"],
+	  "F3": ["u", "u", "u", "u"],
+	  "F4": ["u", "u", "u", "u"],
+	  "F5": ["u", "u", "u", "u"],
+	  "F6": ["u", "u", "u", "u"],
+	  "F7": ["u", "u", "u", "u"],
+	  "F8": ["u", "u", "n", "u"],
+	  "G2": ["n", "u", "u", "u"],
+	  "G3": ["u", "u", "u", "u"],
+	  "G4": ["u", "u", "u", "u"],
+	  "G5": ["u", "u", "u", "u"],
+	  "G6": ["u", "u", "u", "u"],
+	  "G7": ["u", "u", "u", "u"],
+	  "G8": ["u", "u", "n", "u"],
+	  "H2": ["n", "u", "u", "u"],
+	  "H3": ["u", "u", "u", "u"],
+	  "H4": ["u", "u", "u", "u"],
+	  "H5": ["u", "u", "u", "u"],
+	  "H6": ["u", "u", "u", "u"],
+	  "H7": ["u", "u", "u", "u"],
+	  "H8": ["u", "u", "n", "u"],
+	  "I2": ["n", "u", "u", "u"],
+	  "I3": ["u", "u", "u", "u"],
+	  "I4": ["u", "u", "u", "u"],
+	  "I5": ["u", "u", "u", "u"],
+	  "I6": ["u", "u", "u", "u"],
+	  "I7": ["u", "u", "u", "u"],
+	  "I8": ["u", "u", "n", "u"],
+	  "J2": ["n", "n", "u", "u"],
+	  "J3": ["u", "n", "u", "u"],
+	  "J4": ["u", "n", "u", "u"],
+	  "J5": ["u", "n", "u", "u"],
+	  "J6": ["u", "n", "u", "u"],
+	  "J7": ["u", "n", "u", "u"],
+	  "J8": ["u", "n", "n", "u"]
+	};
+
+	module.exports = canvasParameters;
+
+/***/ },
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var $ = __webpack_require__(2);
+
 	var Effects = function Effects() {};
 
 	var canvasColors = ['#59323C', '#320132', '#8E3F25', '#443B22', '#1E280B', '#4D3933'];
@@ -11001,7 +11031,7 @@
 	    $('.level-announcements').fadeOut(1000);
 	    $('canvas').delay(2000).fadeIn(1000);
 	    $('.game-div').off('click');
-	    self.playLevel(0);
+	    self.playLevel(5);
 	  });
 	};
 
