@@ -11022,7 +11022,7 @@
 	    $('.level-announcements').fadeOut(1000);
 	    $('canvas').delay(2000).fadeIn(1000);
 	    $('.game-div').off('click');
-	    self.playLevel(5);
+	    self.playLevel(0);
 	  });
 	};
 
